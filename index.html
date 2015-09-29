@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>ul {
+        margin: 0
+    }</style>
+</head>
+<body ng-app="myApp">
+
+<div ng-controller="listController">
+    {{message}}
+    <div ng-repeat="(key, value) in listData | groupBy: 'gender'">
+        <h2>{{key}}</h2>
+        <ul>
+            <li ng-repeat="pet in value | orderBy:'name'">{{pet.name}}</li>
+        </ul>
+    </div>
+</div>
+<script src="js/components/angular/angular.min.js"></script>
+<script src="js/components/angular-filter/dist/angular-filter.min.js"></script>
+<script type="text/javascript">
+    'use strict';
+    angular.module('myApp', ['angular.filter'])
+            .controller('listController', ['$scope', 'resourceService', function ($scope, resourceService) {
+                /**
+                 * @ngdoc function
+                 * @name getJsonData
+                 * @param {object} - data: Json data from resourceService
+                 * @return {Array} - output: transformed data for listing
+                 */
+                function constructListData(data) {
+                    var output = [];
+                    angular.forEach(data, function (person, index) {
+                        angular.forEach(person.pets, function (value, key) {
+                            if (value.type === 'Cat') {
+                                output.push({
+                                    "gender": person.gender,
+                                    "name": value.name
+                                });
+                            }
+
+                        })
+                    });
+                    $scope.listData = output;
+                }
+
+                resourceService.getJsonData().then(
+                        function (response) {
+                            constructListData(response);
+                        },
+                        function (response) {
+                            $scope.message = response.error;
+                        });
+
+            }])
+            /**
+             * @ngdoc Service
+             * @name resourceService
+             * @description Handles request to get data from web service
+             */
+            .service('resourceService', ['$http', '$q', function ($http, $q) {
+                var resourceService = {
+                    /**
+                     * @ngdoc function
+                     * @name getJsonData
+                     * @param void
+                     * @return {object} - Promise
+                     */
+                    getJsonData: function () {
+                        var deferred = $q.defer();
+                        var url = "http://agl-developer-test.azurewebsites.net/people.json?callback=JSON_CALLBACK";
+                        $http.jsonp(url)
+                                .success(function (data) {
+                                    deferred.resolve(data);
+                                })
+                                .error(function (data) {
+                                    deferred.reject({error: "Request failed"})
+                                });
+                        return deferred.promise;
+                    }
+                };
+                return resourceService;
+            }]);
+
+</script>
+</body>
+</html>

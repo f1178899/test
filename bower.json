@@ -1,0 +1,12 @@
+{
+  "name": "AGL Developer Test",
+  "description": "AGL Developer Test",
+  "version": "1.0.0",
+  "license": "Proprietary",
+  "author": "Delong Huang",
+  "private": true,
+  "dependencies": {
+    "angular": "^1.5.0",
+    "angular-filter": "^0.5.6"
+  }
+}
